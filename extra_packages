@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: GPL-2.0
+
+# byobu (not to have a dep to iproute2)
+BYOBU_URL="https://github.com/dustinkirkland/byobu/archive/refs/tags/6.12.tar.gz"
+BYOBU_SUM="abb000331858609dfda9214115705506249f69237625633c80487abe2093dd45  byobu.tar.gz"
+cd /opt && \
+	curl -L "${BYOBU_URL}" -o byobu.tar.gz && \
+	echo "${BYOBU_SUM}" | sha256sum -c && \
+	tar xzf byobu.tar.gz && \
+	cd byobu-*/ && \
+		./autogen.sh && \
+		./configure --prefix=/usr && \
+		make -j"$(nproc)" -l"$(nproc)" && \
+		make install
+
+# packetdrill
+PACKETDRILL_GIT_URL="https://github.com/multipath-tcp/packetdrill.git"
+PACKETDRILL_GIT_BRANCH="mptcp-net-next"
+PACKETDRILL_GIT_BRANCH="${PACKETDRILL_GIT_BRANCH}"
+cd /opt && \
+	git clone "${PACKETDRILL_GIT_URL}" && \
+	cd packetdrill && \
+		git checkout "${PACKETDRILL_GIT_BRANCH}" && \
+		cd gtests/net/packetdrill/ && \
+			./configure && \
+			make -j"$(nproc)" -l"$(nproc)" && \
+			ln -s /opt/packetdrill/gtests/net/packetdrill/packetdrill \
+			      /opt/packetdrill/gtests/net/packetdrill/run_all.py \
+				/usr/sbin/
+
+# Sparse
+SPARSE_GIT_URL="git://git.kernel.org/pub/scm/devel/sparse/sparse.git"
+SPARSE_GIT_SHA="09411a7a5127516a0741eb1bd8762642fa9197ce" # include a fix for 'unreplaced' issues and llvm 16
+cd /opt && \
+	git clone "${SPARSE_GIT_URL}" sparse && \
+	cd "sparse" && \
+		git checkout "${SPARSE_GIT_SHA}" && \
+		make -j"$(nproc)" -l"$(nproc)" && \
+		make PREFIX=/usr install && \
+		cd .. && \
+	rm -rf "sparse"
+
+# iproute
+IPROUTE2_GIT_URL="git://git.kernel.org/pub/scm/network/iproute2/iproute2.git"
+IPROUTE2_GIT_SHA="v6.10.0"
+cd /opt && \
+	git clone "${IPROUTE2_GIT_URL}" iproute2 && \
+	cd iproute2 && \
+		git checkout "${IPROUTE2_GIT_SHA}" && \
+		./configure && \
+		make -j"$(nproc)" -l"$(nproc)" && \
+		make install
+
+# Virtme NG
+VIRTME_NG_VERSION="1.27"
+pip3 install --break-system-packages virtme-ng=="${VIRTME_NG_VERSION}"
+
+# to quickly shutdown the VM and more
+for i in /usr/lib/klibc/bin/*; do \
+	type "$(basename "${i}")" >/dev/null 2>&1 || ln -sv "${i}" /usr/sbin/; \
+    done
