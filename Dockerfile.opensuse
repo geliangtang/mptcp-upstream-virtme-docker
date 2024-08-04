@@ -1,0 +1,47 @@
+# opensuse/leap:15.6 or opensuse/tumbleweed:latest
+FROM opensuse/leap:15.6
+
+LABEL name=mptcp-upstream-virtme-docker
+
+# dependencies for the script
+RUN zypper update -y && \
+	zypper install -y \
+		make ncurses-devel gcc gcc-c++ ssl-devel bc bison automake \
+		libelf-devel flex git curl tar qemu-kvm sudo expect \
+		python3 python3-pip file \
+		busybox coreutils udev \
+		kbd rsync \
+		kmod \
+		tcpdump \
+		pkg-config \
+		clang lld llvm llvm-devel libcap-devel \
+		dracut \
+		libslang2 slang-devel libdw-devel python3-devel python3-setuptools binutils-devel \
+		gdb crash dwarves pahole strace \
+		iptables ebtables nftables vim psmisc bash-completion less jq \
+		gettext libtraceevent-devel \
+		libdwarf-devel libnuma-devel libzstd-devel libunwind-devel \
+		systemtap-sdt-devel \
+		python3-docutils \
+		babeltrace-devel libpfm-devel \
+		libxml2-devel sqlite-devel gtk3-devel gtk2-devel \
+		zstd \
+		wget xz lftp cpio \
+		cscope \
+		bpftrace \
+		&& \
+	zypper clean
+
+COPY extra_packages /
+RUN bash /extra_packages
+
+# CCache for quicker builds with default colours
+# Note: use 'ccache -M xG' to increase max size, default is 5GB
+ENV PATH /usr/lib/ccache:${PATH}
+ENV CCACHE_COMPRESS true
+ENV KBUILD_BUILD_TIMESTAMP "0"
+ENV GCC_COLORS error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01
+
+COPY entrypoint.sh tap2json.py /
+
+ENTRYPOINT ["/entrypoint.sh"]
