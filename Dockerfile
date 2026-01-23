@@ -35,6 +35,8 @@ RUN apt-get update && \
 		stress-ng \
 		python3-pexpect \
 		nvme-cli fio keyutils ktls-utils libnss-myhostname \
+		meson ninja-build \
+		libgnutls28-dev libkeyutils-dev libglib2.0-dev libnl-3-dev libyaml-dev \
 		&& \
 	apt-get clean
 
@@ -107,6 +109,25 @@ RUN cd /opt && \
 		make install && \
 		cd .. && \
 	rm -rf iproute2
+
+# nvme-cli
+RUN cd /opt && \
+	git clone https://gitee.com/geliangtang/nvme-cli.git nvme-cli && \
+	cd nvme-cli && \
+		mkdir build && \
+		cd    build && \
+		meson setup --prefix=/usr --sysconfdir=/etc --buildtype=release .. && \
+		ninja -j"$(nproc)" && \
+		ninja install
+
+# ktls-utils
+RUN cd /opt && \
+	git clone https://gitee.com/geliangtang/ktls-utils.git ktls-utils && \
+	cd ktls-utils && \
+		./autogen.sh && \
+		./configure --prefix=/usr --sysconfdir=/etc && \
+		make -j"$(nproc)" && \
+		make install
 
 # Virtme NG
 ARG VIRTME_NG_VERSION="1.41"
