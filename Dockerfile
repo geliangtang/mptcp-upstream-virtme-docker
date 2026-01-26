@@ -41,20 +41,16 @@ RUN apt-get update && \
 	apt-get clean
 
 # byobu (not to have a dep to iproute2)
-ARG BYOBU_URL="https://github.com/dustinkirkland/byobu/archive/refs/tags/6.16.tar.gz"
-ARG BYOBU_SUM="ce294bbc2c04c2b2dd79e2d0ec336812d8e9bd4d9a7f696e2ba335ecbc17fe68  byobu.tar.gz"
 RUN cd /opt && \
-	curl -L "${BYOBU_URL}" -o byobu.tar.gz && \
-	echo "${BYOBU_SUM}" | sha256sum -c && \
-	tar xzf byobu.tar.gz && \
-	cd byobu-*/ && \
+	git clone https://gitee.com/geliangtang/byobu.git byobu && \
+	cd byobu/ && \
 		./autogen.sh && \
 		./configure --prefix=/usr --sysconfdir=/etc && \
 		make -j"$(nproc)" -l"$(nproc)" && \
 		make install
 
 # packetdrill
-ARG PACKETDRILL_GIT_URL="https://github.com/multipath-tcp/packetdrill.git"
+ARG PACKETDRILL_GIT_URL="https://gitee.com/geliangtang/packetdrill.git"
 ARG PACKETDRILL_GIT_BRANCH="mptcp-net-next"
 ENV PACKETDRILL_GIT_BRANCH="${PACKETDRILL_GIT_BRANCH}"
 RUN cd /opt && \
@@ -81,7 +77,7 @@ RUN cd /opt && \
 	rm -rf "sparse"
 
 # Pahole
-ARG PAHOLE_GIT_URL="https://kernel.googlesource.com/pub/scm/devel/pahole/pahole.git"
+ARG PAHOLE_GIT_URL="https://git.kernel.org/pub/scm/devel/pahole/pahole.git"
 ARG PAHOLE_GIT_SHA="6fd0dacc9418b103af4245ab300b9c135bcdb383" # fix discarded-qualifiers
 RUN cd /opt && \
 	git clone "${PAHOLE_GIT_URL}" pahole && \
