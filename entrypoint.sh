@@ -1427,7 +1427,7 @@ run_loop_n() { local i tdir rc=0
 	while true; do
 		echo -e "\n\n\t=== ${COLOR_BLUE}Attempt: \${i} (\$(date -R))${COLOR_RESET} ===\n\n"
 
-		if ! "\${fn}" "\${@}" || has_call_trace; then
+		if ! "\${fn}" "\${@}" || has_call_trace || [ -s "\${KMEMLEAK}" ]; then
 			rc=1
 
 			echo -e "\n\n\t=== ${COLOR_RED}ERROR after \${i} attempts (\$(date -R))${COLOR_RESET} ===\n\n"
